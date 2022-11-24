@@ -3,12 +3,48 @@
 namespace App\Http\Controllers;
 
 use App\Models\Estadisticas;
+use App\Models\Parques;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class EstadisticasController extends Controller
 {
+
+    public function obtener(Request $request)
+    {                
+        $validator = Validator::make($request->all(), [
+            'id_user' => ['required'],
+            'fechaDesde'  => ['required'],
+            'fechaHasta'  => ['required'],            
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json($validator->messages(), Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        $id = $request->id_user;
+        $inicio = $request->fechaDesde;
+        $fin = $request->fechaHasta;
+
+        $estadisticas = Parques::select('parques.id', 'parques.nombre', DB::raw('IFNULL(SUM(estadisticas.cantidad), 0) AS cantidad'))
+                        ->join('usuario_parque', 'usuario_parque.id_parque', 'parques.id')
+                        ->leftJoin('estadisticas', 'estadisticas.id_parque', 'parques.id')
+                        ->leftJoin('tipovisitante', 'tipovisitante.id', 'estadisticas.tipo')
+                        ->where('usuario_parque.id_usuario', $id)
+                        ->whereBetween('estadisticas.fecha', 
+                        [DB::raw("STR_TO_DATE('$inicio', '%d-%m-%Y')"), DB::raw("STR_TO_DATE('$fin', '%d-%m-%Y')")])
+                        ->groupBy('parques.id')
+                        ->orderBy('cantidad')->get();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Estadística generada.',
+            'data' => $estadisticas,
+        ]);        
+    }
+
     /**
      * Display a listing of the resource.
      *
@@ -123,5 +159,5 @@ class EstadisticasController extends Controller
             "message" => "Estadística eliminada correctamente.",
             "data" => $estadistica,
         ]);
-    }
+    }    
 }

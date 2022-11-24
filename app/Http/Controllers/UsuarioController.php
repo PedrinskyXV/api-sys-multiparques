@@ -11,6 +11,33 @@ use Illuminate\Support\Facades\Validator;
 
 class UsuarioController extends Controller
 {
+
+    public function findByUsernameAndPassword(Request $request)
+    {
+        $validator = Validator::make($request->all(), [                        
+            'usuario' => ['required'],
+            'contrasenia' => ['required'],            
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json($validator->messages(), Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        $request['contrasenia'] = md5($request->contrasenia);
+
+        $usuario = Usuario::where('usuario', $request->usuario)
+                    ->where('contrasenia', $request->contrasenia)
+                    ->where('activo', '1')->get();
+        $usuario->count() ? $login = true : $login = false;
+
+        return response()->json([
+            "error" => $login,
+            /* "message" => "Usuario logeado correctamente.", */
+            "usr" => $usuario,
+            "login" => $login,
+        ]);
+    }
+
     /**
      * Display a listing of the resource.
      *
