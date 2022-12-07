@@ -8,34 +8,39 @@ use App\Http\Requests\UpdateUsuarioRequest;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Log;
 
 class UsuarioController extends Controller
 {
 
     public function findByUsernameAndPassword(Request $request)
     {
+        
+            
         $validator = Validator::make($request->all(), [                        
-            'usuario' => ['required'],
-            'contrasenia' => ['required'],            
+            'username' => ['required'],
+            'password' => ['required'],            
         ]);
 
         if ($validator->fails()) {
             return response()->json($validator->messages(), Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
-        $request['contrasenia'] = md5($request->contrasenia);
-
-        $usuario = Usuario::where('usuario', $request->usuario)
-                    ->where('contrasenia', $request->contrasenia)
-                    ->where('activo', '1')->get();
+        $request['password'] = md5($request->password);
+        error_log($request->username);
+        $usuario = Usuario::where('usuario', $request->username)
+                    ->where('contrasenia', $request->password)
+                    ->where('activo', 1)->get();
         $usuario->count() ? $login = true : $login = false;
 
         return response()->json([
             "error" => $login,
             /* "message" => "Usuario logeado correctamente.", */
-            "usr" => $usuario,
+            "usr" => $usuario->first(),
             "login" => $login,
         ]);
+      
+
     }
 
     /**
@@ -69,7 +74,7 @@ class UsuarioController extends Controller
             'usuario' => ['required'],
             'contrasenia' => ['required'],
             'dui' => ['required'],
-            'tipo' => ['required', 'integer'],
+            'tipo' => ['required'],
             'activo' => ['required', 'integer'],
         ]);
 
@@ -121,7 +126,7 @@ class UsuarioController extends Controller
             'usuario' => ['required'],
             'contrasenia' => ['required'],
             'dui' => ['required'],
-            'tipo' => ['required', 'integer'],
+            'tipo' => ['required'],
             'activo' => ['required', 'integer'],
         ]);
 

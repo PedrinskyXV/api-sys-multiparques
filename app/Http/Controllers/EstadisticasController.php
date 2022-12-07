@@ -28,7 +28,7 @@ class EstadisticasController extends Controller
         $inicio = $request->fechaDesde;
         $fin = $request->fechaHasta;
 
-        $estadisticas = Parques::select('parques.id', 'parques.nombre', DB::raw('IFNULL(SUM(estadisticas.cantidad), 0) AS cantidad'))
+        $estadisticas = Parques::select('parques.id', 'parques.nombre','tipovisitante.tipo', DB::raw('IFNULL(SUM(estadisticas.cantidad), 0) AS cantidad'))
                         ->join('usuario_parque', 'usuario_parque.id_parque', 'parques.id')
                         ->leftJoin('estadisticas', 'estadisticas.id_parque', 'parques.id')
                         ->leftJoin('tipovisitante', 'tipovisitante.id', 'estadisticas.tipo')
@@ -36,6 +36,8 @@ class EstadisticasController extends Controller
                         ->whereBetween('estadisticas.fecha', 
                         [DB::raw("STR_TO_DATE('$inicio', '%d-%m-%Y')"), DB::raw("STR_TO_DATE('$fin', '%d-%m-%Y')")])
                         ->groupBy('parques.id')
+                        ->groupBy('parques.nombre')
+                        ->groupBy('tipovisitante.tipo')
                         ->orderBy('cantidad')->get();
 
         return response()->json([

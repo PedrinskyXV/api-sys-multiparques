@@ -25,9 +25,10 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 Route::apiResource('tipos-visitante', TipoVisitanteController::class);
 Route::apiResource('usuarios', UsuarioController::class);
-/* Route::apiResource('parques', ParquesController::class);
-Route::apiResource('estadisticas', EstadisticasController::class); */
+/* Route::apiResource('parques', ParquesController::class); */
 Route::get('estadisticas/obtener', [EstadisticasController::class, 'obtener']);
-Route::get('parques/obtener', [ParquesController::class, 'obtener']);
+
+Route::apiResource('estadisticas', EstadisticasController::class);
+Route::get('parques/obtener', [ParquesController::class, 'index']);
 Route::post('usuario/login', [UsuarioController::class, 'findByUsernameAndPassword']);
 /* Route::post('estadisticas/obtener', [EstadisticasController::class, 'obtener']); */
